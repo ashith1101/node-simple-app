@@ -5,8 +5,10 @@
                 args '-p 3000:3000 -u root:root'
             }
         }
+        
         environment {
                 CI = 'true'
+                SHELL = '/bin/sh'
             }
 
         stages {
