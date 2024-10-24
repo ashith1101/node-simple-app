@@ -1,46 +1,46 @@
-pipeline {
-    agent any
-
-    environment {
-        SHELL = '/bin/sh' // Or the path where sh is installed on your system
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/ashith1101/node-simple-app.git'
+    pipeline {
+        agent {
+            docker {
+                image 'node:22-alpine'
+                args '-p 3000:3000 -u root:root'
             }
         }
+        environment {
+                CI = 'true'
+            }
 
-        stage('Build') {
-            steps {
-                script {
-                    def appImage = docker.build("node-simple-app:${env.BUILD_ID}")
+        stages {
+            
+            stage('Install Dependencies') {
+                steps {
+                    sh '''
+                        npm install
+                    '''
+                }
+            }
+
+            
+            // stage('Test') {
+            //     steps {
+            //         sh 'npm test'
+            //     }
+            // }
+            
+            stage('Deploy') {
+                steps {
+                    sh '''
+                        # Kill existing node process if running
+                        pkill node || true
+                        
+                        # Start the application in background
+                        nohup npm start > output.log 2>&1 &
+                        
+                        # Wait for app to start
+                        sleep 5
+                        
+                        echo "Application deployed at http://localhost:3000"
+                    '''
                 }
             }
         }
-
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    docker.image("node-simple-app:${env.BUILD_ID}").run('-p 3000:3000')
-                }
-            }
-        }
     }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed.'
-        }
-    }
-}
