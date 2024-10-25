@@ -22,11 +22,11 @@
             }
 
             
-            // stage('Test') {
-            //     steps {
-            //         sh 'npm test'
-            //     }
-            // }
+            stage('Test') {
+                steps {
+                    sh 'npm test'
+                }
+            }
             
             stage('Deploy') {
                 steps {
